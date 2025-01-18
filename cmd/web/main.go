@@ -5,6 +5,7 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"os"
 )
 
 type config struct {
@@ -20,6 +21,9 @@ func main() {
 
 	flag.Parse()
 
+	logInfo := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", home)
 	mux.HandleFunc("/snippet/view", snippetView)
@@ -28,11 +32,26 @@ func main() {
 	fileStaticServer := http.FileServer(http.Dir(cfg.staticDir))
 	mux.Handle("/static/", http.StripPrefix("/static", fileStaticServer))
 
-	log.Printf("Server running on %s\n", cfg.addr)
+	// f, err := os.OpenFile("/tmp/info.log", os.O_RDWR|os.O_CREATE, 0666)
+	// if err != nil {
+	//     log.Fatal(err)
+	// }
+	// defer f.Close()
+	//
+	// infoLog := log.New(f, "INFO\t", log.Ldate|log.Ltime)
+
+	logInfo.Printf("Server running on %s\n", cfg.addr)
 	slog.Info("Server configs:", "addr", cfg.addr, "static-dir", cfg.staticDir)
 
-	err := http.ListenAndServe(cfg.addr, mux)
+	srv := &http.Server{
+		Addr:     *&cfg.addr,
+		ErrorLog: errorLog,
+		Handler:  mux,
+	}
+
+	err := srv.ListenAndServe()
+
 	if err != nil {
-		log.Fatal(err)
+		errorLog.Fatal(err)
 	}
 }
