@@ -36,14 +36,6 @@ func main() {
 
 	flag.Parse()
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", app.home)
-	mux.HandleFunc("/snippet/view", app.snippetView)
-	mux.HandleFunc("/snippet/create", app.snippetCreate)
-
-	fileStaticServer := http.FileServer(http.Dir(cfg.staticDir))
-	mux.Handle("/static/", http.StripPrefix("/static", fileStaticServer))
-
 	// f, err := os.OpenFile("/tmp/info.log", os.O_RDWR|os.O_CREATE, 0666)
 	// if err != nil {
 	//     log.Fatal(err)
@@ -58,7 +50,7 @@ func main() {
 	srv := &http.Server{
 		Addr:     *&cfg.addr,
 		ErrorLog: app.errorLog,
-		Handler:  mux,
+		Handler:  app.routes(),
 	}
 
 	err := srv.ListenAndServe()
