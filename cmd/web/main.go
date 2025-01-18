@@ -15,24 +15,29 @@ type config struct {
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
+	config   *config
 }
 
 func initApp() *application {
+	config := &config{
+		addr:      "",
+		staticDir: "",
+	}
 
 	logInfo := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	return &application{
 		infoLog:  logInfo,
 		errorLog: errorLog,
+		config:   config,
 	}
 }
 
 func main() {
-	var cfg config
 	app := initApp()
 
-	flag.StringVar(&cfg.addr, "addr", ":4000", "Http Network address")
-	flag.StringVar(&cfg.staticDir, "static-dir", "./ui/static", "Path to static assets")
+	flag.StringVar(&app.config.addr, "addr", ":4000", "Http Network address")
+	flag.StringVar(&app.config.staticDir, "static-dir", "./ui/static", "Path to static assets")
 
 	flag.Parse()
 
@@ -44,11 +49,11 @@ func main() {
 	//
 	// infoLog := log.New(f, "INFO\t", log.Ldate|log.Ltime)
 
-	app.infoLog.Printf("Server running on %s\n", cfg.addr)
-	slog.Info("Server configs:", "addr", cfg.addr, "static-dir", cfg.staticDir)
+	app.infoLog.Printf("Server running on %s\n", app.config.addr)
+	slog.Info("Server configs:", "addr", app.config.addr, "static-dir", app.config.staticDir)
 
 	srv := &http.Server{
-		Addr:     *&cfg.addr,
+		Addr:     app.config.addr,
 		ErrorLog: app.errorLog,
 		Handler:  app.routes(),
 	}

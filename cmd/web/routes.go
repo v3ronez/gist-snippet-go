@@ -9,7 +9,7 @@ func (app *application) routes() *http.ServeMux {
 	mux.HandleFunc("/snippet/view", app.snippetView)
 	mux.HandleFunc("/snippet/create", app.snippetCreate)
 
-	fileStaticServer := http.FileServer(http.Dir(cfg.staticDir))
+	fileStaticServer := http.FileServer(http.Dir(app.config.staticDir))
 	mux.Handle("/static/", http.StripPrefix("/static", fileStaticServer))
 	return mux
 }
