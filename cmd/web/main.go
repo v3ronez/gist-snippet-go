@@ -1,8 +1,8 @@
 package main
 
 import (
+	"flag"
 	"log"
-	"log/slog"
 	"net/http"
 )
 
@@ -15,10 +15,12 @@ func main() {
 
 	fileStaticServer := http.FileServer(http.Dir("./ui/static"))
 	mux.Handle("/static/", http.StripPrefix("/static", fileStaticServer))
+	addr := flag.String("addr", ":4000", "Http Network address")
+	flag.Parse()
 
-	slog.Info("Server running in port: 4000")
+	log.Printf("Server running on %s", *addr)
 
-	err := http.ListenAndServe(":4000", mux)
+	err := http.ListenAndServe(*addr, mux)
 	if err != nil {
 		log.Fatal(err)
 	}
