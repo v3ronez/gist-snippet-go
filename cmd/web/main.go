@@ -44,12 +44,12 @@ func main() {
 	dns := flag.String("dns", "web:@/snippetbox?parseTime=true", "Mysql data source name")
 
 	flag.Parse()
-	db, err := openDBConnect(dns)
+	db, err := openDBConnect(*dns)
 	if err != nil {
 		app.errorLog.Fatal(err)
 	}
 	app.infoLog.Println("Database connected successfully!")
-	var _ = db
+	defer db.Close()
 	// f, err := os.OpenFile("/tmp/info.log", os.O_RDWR|os.O_CREATE, 0666)
 	// if err != nil {
 	//     log.Fatal(err)
@@ -74,8 +74,8 @@ func main() {
 	}
 }
 
-func openDBConnect(dns *string) (*sql.DB, error) {
-	db, err := sql.Open("mysql", *dns)
+func openDBConnect(dns string) (*sql.DB, error) {
+	db, err := sql.Open("mysql", dns)
 	if err != nil {
 		log.Fatal(err)
 	}
